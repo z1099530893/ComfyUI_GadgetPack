@@ -6,7 +6,7 @@
 - `ComfyUI_Group_DoubleClickBypass`：在组内空白处双击，切换该组内节点 bypass。
 
 ## Prompt List (提示词列表)
-
+该节点移植自：https://github.com/Suzie1/ComfyUI_Comfyroll_CustomNodes，由于该大佬很久没有更新，我就移植过来了
 在 ComfyUI 中搜索：
 
 ```text
