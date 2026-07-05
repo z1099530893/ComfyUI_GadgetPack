@@ -64,7 +64,7 @@ cat
 dog
 ```
 
-## ComfyUI_Group_DoubleClickBypass v0.1.0
+## ComfyUI_Group_DoubleClickBypass
 
 这是一个前端画布功能，不是需要放入工作流的节点。
 
@@ -124,7 +124,7 @@ ComfyUI_GadgetPack/
 3. 打开浏览器开发者工具 Console，查看是否有类似日志：
 
 ```text
-[ComfyUI_Group_DoubleClickBypass] installed v0.1.0
+[ComfyUI_Group_DoubleClickBypass] installed
 ```
 
 如果能看到该日志，说明前端脚本已经加载。
