@@ -1,10 +1,11 @@
-# ComfyUI_GadgetPack v0.1.1
+# ComfyUI_GadgetPack v0.1.2
 
 `ComfyUI_GadgetPack` 是一个 ComfyUI 小工具合集插件，目前包含：
 
 - `Prompt List (提示词列表)`：把多行文本拆分为提示词列表和正文列表。
 - `ComfyUI_Group_DoubleClickBypass`：在组内空白处双击，切换该组内节点 bypass。
 - `Branch_Runner`：在分组内空白处右键，执行该组及其必要上游依赖。
+- `Image Comparer (图像对比器)`：用滑动分割线或按住切换的方式对比两张图像。
 
 ## Prompt List (提示词列表)
 
@@ -20,7 +21,7 @@ Prompt List，中文搜索：提示词列表
 或在分类中查找：
 
 ```text
-ComfyUI_GadgetPack/Prompt
+ComfyUI_GadgetPack/提示词
 ```
 
 ### 输入
@@ -112,6 +113,43 @@ dog
 - 插件只会临时过滤本次 prompt，不会永久修改工作流结构。
 - 如果分组内没有可执行输出节点，菜单项会被禁用。
 
+## Image Comparer (图像对比器)
+
+该节点集成自独立插件 `image-comparer`，节点内部 ID 固定为：
+
+```text
+GadgetPack Image Comparer
+```
+
+中文显示名称为：
+
+```text
+图像对比器
+```
+
+在 ComfyUI 中搜索：
+
+```text
+图像对比器
+GadgetPack Image Comparer
+```
+
+或在分类中查找：
+
+```text
+ComfyUI_GadgetPack/图像
+```
+
+### 功能
+
+- 连接 `图像 A` 和 `图像 B` 后，可在节点预览区域对比两张图像。
+- 默认 `Slide` 模式下，移动鼠标可通过滑动分割线对比图像。
+- `Click` 模式下，按住鼠标显示图像 B，松开显示图像 A。
+- 可通过 `标签 A`、`标签 B` 给两张图像添加画布预览标签。
+- 可通过 `标签颜色` 调整标签颜色。
+- 可通过 `输出图像` 选择节点输出原始图像 A 或原始图像 B。
+- 预览标签、分割线和对比 UI 不会写入输出图像。
+
 ## 安装
 
 将整个文件夹放到 ComfyUI 的 `custom_nodes` 目录：
@@ -126,15 +164,11 @@ ComfyUI/custom_nodes/ComfyUI_GadgetPack
 ComfyUI_GadgetPack/
 ├─ __init__.py
 ├─ README.md
-├─ _archive/
-│  ├─ v0.1.0/
-│  └─ ComfyUI_Branch_Runner/
 └─ web/
    ├─ group_double_click_bypass.js
-   └─ branch_runner.js
+   ├─ branch_runner.js
+   └─ image_comparer.js
 ```
-
-其中根目录的 `__init__.py` 和 `web/` 是当前可安装版本；`_archive/` 只是历史版本与来源插件备份，不参与 ComfyUI 插件加载。
 
 然后重启 ComfyUI。
 
@@ -169,16 +203,32 @@ ComfyUI_GadgetPack/
 [Branch_Runner] installed
 ```
 
+如果找不到 `图像对比器`：
+
+1. 确认插件目录为 `ComfyUI/custom_nodes/ComfyUI_GadgetPack`。
+2. 重启 ComfyUI。
+3. 在节点搜索中搜索 `图像对比器` 或 `GadgetPack Image Comparer`。
+4. 查看 ComfyUI 启动日志是否有 Python 报错。
+
 ## 说明
 
 - `Prompt List (提示词列表)` 是 Python 节点，会出现在节点搜索中。
+- `Image Comparer (图像对比器)` 是 Python 节点，会出现在节点搜索中。
 - `ComfyUI_Group_DoubleClickBypass` 是前端画布功能，不会出现在节点搜索中。
 - `Branch_Runner` 是前端画布功能，不会出现在节点搜索中。
 - 组双击开关状态保存在浏览器 `localStorage` 中。
 - 当前组双击逻辑以节点完整位于组框内部为准。
 - `Branch_Runner` 会临时过滤本次队列提交的 prompt，不会删除、移动、绕过或静音任何节点。
+- `Image Comparer` 的前端 UI 由 `web/image_comparer.js` 提供。
 
 ## 更新记录
+
+### v0.1.2
+
+- 新增 `Image Comparer (图像对比器)` 节点。
+- 保留 `Prompt List (提示词列表)` 原有功能。
+- 保留 `ComfyUI_Group_DoubleClickBypass` 原有功能。
+- 保留 `Branch_Runner` 原有功能。
 
 ### v0.1.1
 
@@ -191,4 +241,3 @@ ComfyUI_GadgetPack/
 
 - 新增 `Prompt List (提示词列表)`。
 - 新增 `ComfyUI_Group_DoubleClickBypass` 前端画布功能。
-
