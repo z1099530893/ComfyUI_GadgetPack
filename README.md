@@ -7,7 +7,7 @@
 
 ## Prompt List (提示词列表)
 
-该节点移植自：https://github.com/Suzie1/ComfyUI_Comfyroll_CustomNodes
+该节点移植自：https://github.com/Suzie1/ComfyUI_Comfyroll_CustomNodes 
 由于该大佬很久没有更新，我就移植过来了
 
 在 ComfyUI 中搜索：
@@ -64,7 +64,7 @@ cat
 dog
 ```
 
-## ComfyUI_Group_DoubleClickBypass v0.1.0
+## ComfyUI_Group_DoubleClickBypass
 
 这是一个前端画布功能，不是需要放入工作流的节点。
 
@@ -124,7 +124,7 @@ ComfyUI_GadgetPack/
 3. 打开浏览器开发者工具 Console，查看是否有类似日志：
 
 ```text
-[ComfyUI_Group_DoubleClickBypass] installed v0.1.0
+[ComfyUI_Group_DoubleClickBypass] installed
 ```
 
 如果能看到该日志，说明前端脚本已经加载。
@@ -135,3 +135,8 @@ ComfyUI_GadgetPack/
 - `ComfyUI_Group_DoubleClickBypass` 是前端画布功能，不会出现在节点搜索中。
 - 组双击开关状态保存在浏览器 `localStorage` 中。
 - 当前组双击逻辑以节点完整位于组框内部为准。
+
+### v0.1.0
+
+- 新增 `Prompt List (提示词列表)`。
+- 新增 `ComfyUI_Group_DoubleClickBypass` 前端画布功能。
