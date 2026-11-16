@@ -200,6 +200,7 @@ ComfyUI_GadgetPack/
 ├─ __init__.py
 ├─ hardware.py
 ├─ routes.py
+├─ requirements.txt
 ├─ README.md
 └─ web/
    ├─ group_double_click_bypass.js
@@ -211,6 +212,29 @@ ComfyUI_GadgetPack/
 ```
 
 然后重启 ComfyUI。
+
+## 依赖
+
+资源监控条需要以下 Python 包（已写入 `requirements.txt`，通过 ComfyUI Manager 安装时会自动安装）：
+
+```text
+psutil>=5.9.0
+pynvml>=11.5.0
+```
+
+手动安装：
+
+```powershell
+# 便携版路径示例，按实际 python_embeded 目录替换
+.\python_embeded\python.exe -m pip install -r custom_nodes\ComfyUI_GadgetPack\requirements.txt
+```
+
+不安装 `pynvml` 时插件仍可运行，但顶栏只显示 CPU / 内存 / 磁盘，日志会出现：
+
+```text
+[GadgetPack] pynvml 初始化失败: No module named 'pynvml'
+[GadgetPack] 未检测到可用 GPU，GPU 监控关闭
+```
 
 ## 排查
 
@@ -250,6 +274,23 @@ ComfyUI_GadgetPack/
 3. 在节点搜索中搜索 `图像对比器` 或 `GadgetPack Image Comparer`。
 4. 查看 ComfyUI 启动日志是否有 Python 报错。
 
+如果顶栏只有 CPU / 内存 / 磁盘，没有 GPU / VRAM / 温度（设置里也没有 `显示 GPU` 分组）：
+
+1. 查看 ComfyUI 启动日志是否有：
+
+```text
+[GadgetPack] pynvml 初始化失败:
+[GadgetPack] 未检测到可用 GPU，GPU 监控关闭
+```
+
+2. 安装依赖后重启 ComfyUI：
+
+```powershell
+.\python_embeded\python.exe -m pip install pynvml
+```
+
+3. 在系统命令行执行 `nvidia-smi`，确认 NVIDIA 驱动正常。
+
 ## 说明
 
 - `Prompt List (提示词列表)` 是 Python 节点，会出现在节点搜索中。
@@ -282,6 +323,7 @@ ComfyUI_GadgetPack/
 - 新增 `随机种` 节点（含 🎲 手动随机种子按钮与中文生成后控制）。
 - 新增顶栏 `资源监控条`（CPU / 内存 / GPU / VRAM / GPU 温度 / 磁盘）。
 - 新增 `清理内存显存` 节点。
+- 新增 `requirements.txt`，声明 `psutil`、`pynvml` 依赖。
 
 ### v0.1.2
 
