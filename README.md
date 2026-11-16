@@ -1,4 +1,4 @@
-# ComfyUI_GadgetPack v0.1.2
+# ComfyUI_GadgetPack v0.1.3
 
 `ComfyUI_GadgetPack` 是一个 ComfyUI 小工具合集插件，目前包含：
 
@@ -6,6 +6,9 @@
 - `ComfyUI_Group_DoubleClickBypass`：在组内空白处双击，切换该组内节点 bypass。
 - `Branch_Runner`：在分组内空白处右键，执行该组及其必要上游依赖。
 - `Image Comparer (图像对比器)`：用滑动分割线或按住切换的方式对比两张图像。
+- `清理内存显存`：卸载模型并释放显存与系统内存。
+- `随机种`：提供种子，支持固定/递增/递减/随机。
+- `资源监控条`：顶栏显示 CPU、内存、GPU、VRAM、GPU 温度和磁盘占用。
 
 ## Prompt List (提示词列表)
 
@@ -150,6 +153,29 @@ ComfyUI_GadgetPack/图像
 - 可通过 `输出图像` 选择节点输出原始图像 A 或原始图像 B。
 - 预览标签、分割线和对比 UI 不会写入输出图像。
 
+## 清理内存显存
+
+- 节点 ID：`GadgetPack Memory Cleaner`，分类 `ComfyUI_GadgetPack/工具`。
+- 开启开关时执行：卸载所有模型 + 垃圾回收 + 清空 CUDA 缓存。
+- 关闭开关时仅原样透传输入数据。
+- 可选输入 `任意数据`，输出同类型数据，方便串联在工作流任意位置。
+
+## 随机种
+
+- 节点 ID：`GadgetPack Random Seed`，分类 `ComfyUI_GadgetPack/随机种`。
+- 输入 `seed`，输出同值 `seed`。
+- 自带“生成后控制”，可选固定 / 递增 / 递减 / 随机（显示为中文，底层值保持兼容）。
+- 节点底部有 `🎲 手动随机种子` 按钮，点击后立即随机一次并执行队列。
+
+## 资源监控条
+
+这是前端顶栏功能，不需要放入工作流。
+
+- 在 ComfyUI 顶栏显示 CPU、内存、GPU、VRAM、GPU 温度、磁盘占用。
+- 设置入口：`设置 → GadgetPack`（配置 / 硬件 / 硬盘 / 显示 GPU）。
+- 可调整刷新频率、监控条宽高，以及各硬件项与磁盘分区的显示开关。
+- 数据由后端 `hardware.py` 采集（psutil + pynvml），通过 `gadgetpack.monitor` 事件实时推送。
+
 ## 安装
 
 将整个文件夹放到 ComfyUI 的 `custom_nodes` 目录：
@@ -163,11 +189,16 @@ ComfyUI/custom_nodes/ComfyUI_GadgetPack
 ```text
 ComfyUI_GadgetPack/
 ├─ __init__.py
+├─ hardware.py
+├─ routes.py
 ├─ README.md
 └─ web/
    ├─ group_double_click_bypass.js
    ├─ branch_runner.js
-   └─ image_comparer.js
+   ├─ image_comparer.js
+   ├─ monitor.js
+   ├─ monitor.css
+   └─ seed.js
 ```
 
 然后重启 ComfyUI。
@@ -222,6 +253,12 @@ ComfyUI_GadgetPack/
 - `Image Comparer` 的前端 UI 由 `web/image_comparer.js` 提供。
 
 ## 更新记录
+
+### v0.1.3
+
+- 新增 `随机种` 节点（含 🎲 手动随机种子按钮与中文生成后控制）。
+- 新增顶栏 `资源监控条`（CPU / 内存 / GPU / VRAM / GPU 温度 / 磁盘）。
+- 新增 `清理内存显存` 节点。
 
 ### v0.1.2
 
