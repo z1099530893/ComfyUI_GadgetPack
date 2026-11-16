@@ -159,8 +159,13 @@ ComfyUI_GadgetPack/图像
 - 开启开关时执行：卸载所有模型 + 垃圾回收 + 清空 CUDA 缓存。
 - 关闭开关时仅原样透传输入数据。
 - 可选输入 `任意数据`，输出同类型数据，方便串联在工作流任意位置。
+- 该节点为自行实现，**无外部移植来源**。
 
 ## 随机种
+
+该节点移植自：https://github.com/yolain/ComfyUI-Easy-Use
+
+原节点为 Easy-Use 的 `easy seed`，本插件移植了节点定义、`生成后控制`（fixed / increment / decrement / randomize）以及前端 `🎲 手动随机种子` 交互，并按 GadgetPack 命名重写，可与原插件共存。
 
 - 节点 ID：`GadgetPack Random Seed`，分类 `ComfyUI_GadgetPack/随机种`。
 - 输入 `seed`，输出同值 `seed`。
@@ -168,6 +173,10 @@ ComfyUI_GadgetPack/图像
 - 节点底部有 `🎲 手动随机种子` 按钮，点击后立即随机一次并执行队列。
 
 ## 资源监控条
+
+该功能移植自：https://github.com/crystian/ComfyUI-Crystools
+
+原插件通过 `pynvml` / `psutil` 采集硬件数据，并在 ComfyUI 顶栏渲染彩色监控条。本插件移植了采集逻辑与顶栏 UI 外观，重写为 `GadgetPack` 前缀（路由 `/gadgetpack/monitor`、事件 `gadgetpack.monitor`、设置分类 `GadgetPack`），因此可与 Crystools 同时安装而不冲突。
 
 这是前端顶栏功能，不需要放入工作流。
 
@@ -251,6 +260,20 @@ ComfyUI_GadgetPack/
 - 当前组双击逻辑以节点完整位于组框内部为准。
 - `Branch_Runner` 会临时过滤本次队列提交的 prompt，不会删除、移动、绕过或静音任何节点。
 - `Image Comparer` 的前端 UI 由 `web/image_comparer.js` 提供。
+
+## 移植来源
+
+| 节点 / 功能 | 原始项目 | 说明 |
+| --- | --- | --- |
+| `Prompt List (提示词列表)` | https://github.com/Suzie1/ComfyUI_Comfyroll_CustomNodes | 原作者长期未更新，移植并汉化 |
+| `随机种` | https://github.com/yolain/ComfyUI-Easy-Use | 移植 `easy seed` 节点及其前端交互 |
+| `资源监控条` | https://github.com/crystian/ComfyUI-Crystools | 移植顶栏硬件监控（CPU / 内存 / GPU / VRAM / 温度 / 磁盘） |
+| `Image Comparer (图像对比器)` | 独立插件 `image-comparer` | 集成进本插件 |
+| `清理内存显存` | 无 | 自行实现 |
+| `ComfyUI_Group_DoubleClickBypass` | 无 | 自行实现 |
+| `Branch_Runner` | 无 | 自行实现 |
+
+以上移植功能仅复用原项目的思路与实现细节，均按 GadgetPack 命名重写，不会与原插件产生冲突；版权归原项目作者所有。
 
 ## 更新记录
 
