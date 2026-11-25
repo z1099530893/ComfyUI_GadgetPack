@@ -56,3 +56,96 @@
   font-weight: 700;
   color: var(--input-text);
 }
+
+#gadgetpack-monitors-root .gadgetpack-clean-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  outline: none;
+  background-color: var(--comfy-input-bg);
+  color: var(--input-text);
+  font-size: 15px;
+  line-height: 1;
+  cursor: pointer;
+  transition: filter 0.15s, opacity 0.15s;
+}
+
+#gadgetpack-monitors-root .gadgetpack-clean-btn:hover:not(:disabled) {
+  filter: brightness(1.2);
+}
+
+#gadgetpack-monitors-root .gadgetpack-clean-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+#gadgetpack-monitors-root .gadgetpack-clean-btn.is-cleaning {
+  opacity: 0.8;
+  cursor: progress;
+}
+
+.gadgetpack-modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: rgba(0, 0, 0, 0.5);
+}
+
+.gadgetpack-modal {
+  min-width: 320px;
+  max-width: 440px;
+  padding: 20px 24px 16px;
+  border: 1px solid var(--border-color, rgba(255, 255, 255, 0.15));
+  border-radius: 8px;
+  background-color: var(--comfy-menu-bg, #202020);
+  color: var(--input-text, #ddd);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.45);
+  font-size: 13px;
+}
+
+.gadgetpack-modal-title {
+  font-size: 16px;
+  font-weight: 600;
+  margin-bottom: 10px;
+}
+
+.gadgetpack-modal-message {
+  line-height: 1.7;
+  opacity: 0.85;
+  margin-bottom: 18px;
+  white-space: pre-wrap;
+}
+
+.gadgetpack-modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.gadgetpack-modal-btn {
+  padding: 6px 16px;
+  border: 1px solid var(--border-color, rgba(255, 255, 255, 0.15));
+  border-radius: 4px;
+  background-color: var(--comfy-input-bg, #2b2b2b);
+  color: var(--input-text, #ddd);
+  font-size: 13px;
+  cursor: pointer;
+  transition: filter 0.15s;
+}
+
+.gadgetpack-modal-btn:hover {
+  filter: brightness(1.15);
+}
+
+.gadgetpack-modal-btn-primary {
+  border-color: transparent;
+  background-color: var(--p-primary-color, #4a90d9);
+  color: #fff;
+}

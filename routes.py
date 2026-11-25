@@ -1,10 +1,14 @@
-"""监控条设置路由：/gadgetpack/monitor 系列。"""
+"""监控条设置与一键清理路由：/gadgetpack/monitor、/gadgetpack/cleanup。"""
 
+import asyncio
+import gc
+
+import comfy.model_management as mm
 from aiohttp import web
 
 import server
 
-from .hardware import cmonitor
+from .hardware import cmonitor, get_usage_snapshot
 
 
 def _log(msg):
@@ -90,6 +94,55 @@ async def get_gpus(request):
     except Exception as e:
         _log(f"获取 GPU 列表失败: {e}")
         return web.Response(status=400, text=str(e))
+
+
+def _server_busy():
+    """队列中仍有运行或排队任务时视为忙碌。"""
+    try:
+        running, queued = server.PromptServer.instance.prompt_queue.get_current_queue_volatile()
+        return bool(running) or bool(queued)
+    except Exception as e:
+        _log(f"读取队列状态失败: {e}")
+        return False
+
+
+def _freed(before, after):
+    if before is None or after is None:
+        return None
+    return max(0, before - after)
+
+
+@server.PromptServer.instance.routes.post("/gadgetpack/cleanup")
+async def cleanup_memory(request):
+    if _server_busy():
+        return web.json_response(
+            {"error": "busy", "message": "工作流运行中，已取消清理"}, status=409
+        )
+
+    before = get_usage_snapshot()
+
+    try:
+        mm.unload_all_models()
+        mm.soft_empty_cache()
+        gc.collect()
+    except Exception as e:
+        _log(f"清理内存显存失败: {e}")
+        return web.json_response({"error": str(e)}, status=500)
+
+    # 等待显存真正归还后再次采样
+    await asyncio.sleep(0.2)
+    after = get_usage_snapshot()
+
+    result = {
+        "vram_freed": _freed(before.get("vram_used"), after.get("vram_used")),
+        "ram_freed": _freed(before.get("ram_used"), after.get("ram_used")),
+    }
+    _log(
+        "已清理内存显存 (显存释放 {} / 内存释放 {})".format(
+            result["vram_freed"], result["ram_freed"]
+        )
+    )
+    return web.json_response(result)
 
 
 @server.PromptServer.instance.routes.patch("/gadgetpack/monitor/GPU/{index}")

@@ -81,7 +81,8 @@ class MonitorBar {
 
   applySize() {
     this.styleSheet.innerText =
-      `#gadgetpack-monitors-root .gadgetpack-monitor .gadgetpack-content {height: ${this.height}px; width: ${this.width}px;}`;
+      `#gadgetpack-monitors-root .gadgetpack-monitor .gadgetpack-content {height: ${this.height}px; width: ${this.width}px;}` +
+      `#gadgetpack-monitors-root .gadgetpack-clean-btn {height: ${this.height}px;}`;
   }
 
   applyRate() {
@@ -152,6 +153,79 @@ class MonitorBar {
 }
 
 const bar = new MonitorBar();
+
+function notify(summary, detail, severity = "success") {
+  try {
+    app.extensionManager.toast.add({ severity, summary, detail, life: 3000 });
+  } catch (e) {
+    console.log(`[GadgetPack] ${summary}${detail ? ` - ${detail}` : ""}`);
+  }
+}
+
+function confirmDialog({ title, message, confirmText = "确定", cancelText = "取消" }) {
+  return new Promise((resolve) => {
+    const overlay = document.createElement("div");
+    overlay.className = "gadgetpack-modal-overlay";
+
+    const card = document.createElement("div");
+    card.className = "gadgetpack-modal";
+
+    const heading = document.createElement("div");
+    heading.className = "gadgetpack-modal-title";
+    heading.textContent = title;
+
+    const body = document.createElement("div");
+    body.className = "gadgetpack-modal-message";
+    body.textContent = message;
+
+    const footer = document.createElement("div");
+    footer.className = "gadgetpack-modal-footer";
+
+    const cancelBtn = document.createElement("button");
+    cancelBtn.type = "button";
+    cancelBtn.className = "gadgetpack-modal-btn";
+    cancelBtn.textContent = cancelText;
+
+    const okBtn = document.createElement("button");
+    okBtn.type = "button";
+    okBtn.className = "gadgetpack-modal-btn gadgetpack-modal-btn-primary";
+    okBtn.textContent = confirmText;
+
+    footer.append(cancelBtn, okBtn);
+    card.append(heading, body, footer);
+    overlay.append(card);
+    document.body.append(overlay);
+    okBtn.focus();
+
+    const close = (result) => {
+      document.removeEventListener("keydown", onKey, true);
+      overlay.remove();
+      resolve(result);
+    };
+    const onKey = (event) => {
+      if (event.key === "Escape") {
+        event.preventDefault();
+        event.stopPropagation();
+        close(false);
+      } else if (event.key === "Enter") {
+        event.preventDefault();
+        event.stopPropagation();
+        close(true);
+      }
+    };
+
+    cancelBtn.addEventListener("click", () => close(false));
+    okBtn.addEventListener("click", () => close(true));
+    document.addEventListener("keydown", onKey, true);
+  });
+}
+
+function freedText(data) {
+  const parts = [];
+  if (typeof data.vram_freed === "number") parts.push(`显存 ${formatBytes(data.vram_freed)}`);
+  if (typeof data.ram_freed === "number") parts.push(`内存 ${formatBytes(data.ram_freed)}`);
+  return parts.length ? `已释放 ${parts.join(" / ")}` : "已卸载模型并清空缓存";
+}
 
 async function fetchData(what) {
   const resp = await api.fetchApi(`/gadgetpack/monitor/${what}`, { method: "GET", cache: "no-store" });
@@ -257,6 +331,16 @@ app.registerExtension({
         bar.height = height;
         bar.applySize();
       },
+    });
+
+    // 清理前确认
+    app.ui.settings.addSetting({
+      id: "GadgetPack.ConfirmCleanup",
+      name: "清理前确认",
+      category: ["GadgetPack", `${prefix} 配置`, "confirm"],
+      type: "boolean",
+      defaultValue: false,
+      tooltip: "点击监控条右侧的清理按钮时先弹出确认框，防止误触",
     });
 
     // CPU
@@ -477,6 +561,81 @@ app.registerExtension({
     bar.applyOrder();
     bar.applySize();
     bar.applyRate();
+
+    // 一键清理按钮（监控条最右端）
+    const cleanBtn = document.createElement("button");
+    cleanBtn.type = "button";
+    cleanBtn.className = "gadgetpack-clean-btn";
+    cleanBtn.style.order = "999";
+    cleanBtn.textContent = "🧹";
+    cleanBtn.title = "清理内存显存";
+    bar.root.append(cleanBtn);
+
+    let running = false;
+    let queued = 0;
+
+    const syncCleanBtn = () => {
+      const busy = running || queued > 0;
+      cleanBtn.disabled = busy;
+      cleanBtn.title = busy ? "工作流运行中，暂不可用" : "清理内存显存";
+    };
+
+    api.addEventListener("status", (event) => {
+      queued = event?.detail?.exec_info?.queue_remaining ?? 0;
+      syncCleanBtn();
+    });
+    api.addEventListener("execution_start", () => {
+      running = true;
+      syncCleanBtn();
+    });
+    for (const name of ["execution_success", "execution_error", "execution_interrupted"]) {
+      api.addEventListener(name, () => {
+        running = false;
+        syncCleanBtn();
+      });
+    }
+
+    cleanBtn.addEventListener("click", async () => {
+      if (cleanBtn.disabled) return;
+
+      if (await setting("GadgetPack.ConfirmCleanup", false)) {
+        const ok = await confirmDialog({
+          title: "清理内存显存",
+          message: "将卸载所有已加载的模型，并清空显存与内存缓存，确定继续吗？",
+          confirmText: "立即清理",
+          cancelText: "取消",
+        });
+        if (!ok) return;
+      }
+
+      cleanBtn.disabled = true;
+      cleanBtn.classList.add("is-cleaning");
+      cleanBtn.textContent = "⏳";
+
+      try {
+        const resp = await api.fetchApi("/gadgetpack/cleanup", {
+          method: "POST",
+          cache: "no-store",
+        });
+        const data = await resp.json().catch(() => ({}));
+
+        if (resp.status === 409) {
+          notify("清理已取消", data.message || "工作流运行中", "warn");
+        } else if (!resp.ok) {
+          notify("清理失败", data.error || resp.statusText, "error");
+        } else {
+          notify("已清理内存显存", freedText(data));
+        }
+      } catch (e) {
+        notify("清理失败", String(e), "error");
+      } finally {
+        cleanBtn.textContent = "🧹";
+        cleanBtn.classList.remove("is-cleaning");
+        syncCleanBtn();
+      }
+    });
+
+    syncCleanBtn();
 
     api.addEventListener(
       "gadgetpack.monitor",

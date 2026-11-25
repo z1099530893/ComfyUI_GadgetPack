@@ -296,3 +296,27 @@ class CMonitor:
 
 
 cmonitor = CMonitor(1, True, True, True, True, True)
+
+
+def get_usage_snapshot():
+    """读取当前内存与显存占用（字节）；显存不可用时为 None。"""
+    ram_used = None
+    vram_used = None
+
+    try:
+        ram_used = psutil.virtual_memory().used
+    except Exception as e:
+        _log(f"读取内存占用失败: {e}")
+
+    gpu = cmonitor.hardwareInfo.GPUInfo
+    if gpu.pynvmlLoaded and gpu.anygpuLoaded:
+        try:
+            used = 0
+            for index in range(gpu.cudaDevicesFound):
+                handle = gpu.pynvml.nvmlDeviceGetHandleByIndex(index)
+                used += gpu.pynvml.nvmlDeviceGetMemoryInfo(handle).used
+            vram_used = used
+        except Exception as e:
+            _log(f"读取显存占用失败: {e}")
+
+    return {"ram_used": ram_used, "vram_used": vram_used}
